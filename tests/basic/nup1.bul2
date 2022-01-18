@@ -1,0 +1,29 @@
+
+#ground var [a].
+#ground var [b].
+#ground var [c].
+#ground var [d].
+
+#ground clause[0,pos,a].
+#ground clause[0,neg,b].
+#ground clause[0,neg,c].
+#ground clause[0,neg,d].
+
+
+#ground clause[1,neg,a].
+#ground clause[1,pos,b].
+#ground clause[1,neg,c].
+#ground clause[1,neg,d].
+
+
+#ground clause[2,neg,a].
+#ground clause[2,neg,b].
+#ground clause[2,pos,c].
+#ground clause[2,neg,d].
+
+
+#ground clause[3,neg,a].
+#ground clause[3,neg,b].
+#ground clause[3,neg,c].
+#ground clause[3,pos,d].
+

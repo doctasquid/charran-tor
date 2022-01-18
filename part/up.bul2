@@ -1,0 +1,61 @@
+laststep[20].
+rclause[K,P,X] :: clausel[K].
+ clausel[K]:: #exists[1] clauseok(K).
+ clausel[K]:: #hide clauseok(K).
+ clausel[K]:: #hide ~clauseok(K).
+clausel[K], laststep[L]:: clauseok(K) -> rclause[K,P,X]: forced(L,X,P).
+clausel[K], laststep[L], rclause[K,P,X] :: forced(L,X,P) -> clauseok(K).
+~allok.
+~contradiction.
+
+% this file describes the logic to determine whether the formula is decideable by unit propogation
+% the equivalences are two way so do not need to be rewritten since we are looking for things that
+% are not satisfied :)
+
+contradiction -> ~allok.
+#exists[1] allok.
+#exists[1] contradiction.
+#hide ~allok.
+#hide ~contradiction.
+var[X], step[S]:: #exists[1] contradictionvar(S,X).
+var[X], step[S]:: #hide contradictionvar(S,X).
+var[X], step[S]:: #hide ~contradictionvar(S,X).
+contradiction -> var[X], laststep[L]: contradictionvar(L,X).
+var[X], laststep[L]:: contradictionvar(L,X) -> contradiction.
+clausel[K]:: allok -> clauseok(K).
+
+polarity[pos].
+polarity[neg].
+dualpolarity[pos,neg].
+dualpolarity[neg,pos].
+clause[K,P,X], dualpolarity[P,Q], clause[K,Q,X]:: trivclause[K].
+clause[K,P,X], ~trivclause[K]:: rclause[K,P,X].
+ laststep[L] :: step[0..L].
+
+ step[S],rclause[K,P,X], S > 0:: #exists[1] clauseforced(S,K,X).
+ step[S],rclause[K,P,X],  S > 0:: #hide clauseforced(S,K,X).
+ step[S], var[X], polarity[P] :: #exists[1] forced(S,X,P).
+ step[S], var[X], polarity[P], laststep[L] :: #hide forced(S,X,P).
+ step[S],rclause[K,P,X], S > 0:: #hide ~clauseforced(S,K,X).
+ step[S], var[X], polarity[P] :: #hide ~forced(S,X,P).
+
+ var[X], step[S]:: ~forced(S,X,pos) | ~forced(S,X,neg) | contradictionvar(S,X).
+ var[X], step[S], polarity[P]::  contradictionvar(S,X) -> forced(S,X,P).
+ step[S], step[S+1], var[X], polarity[P]:: forced(S,X,P) -> forced(S+1,X,P).
+
+ input[I] :: assigned(I) & part(I) -> forced(0,I,pos).
+ input[I] :: assigned(I) & part(I) -> ~forced(0,I,neg).
+ input[I] :: assigned(I) & ~part(I) -> forced(0,I,neg).
+ input[I] :: assigned(I) & ~part(I) -> ~forced(0,I,pos).
+ input[I] :: ~assigned(I) -> ~forced(0,I,pos).
+ input[I] :: ~assigned(I) -> ~forced(0,I,neg).
+ var[X], ~input[X], polarity[P]:: ~forced(0,X,P).
+
+ rclause[K,P,X], rclause[K,R,Z], Z != X, dualpolarity[R,Q], step[S], step[S+1]:: forced(S,Z,Q) <- clauseforced(S+1,K,X)  . 
+%clause K can only force literal X if all other literals have been forced to be false at previous step
+ rclause[K,P,X], step[S], step[S+1]::rclause[K,R,Z], Z != X, dualpolarity[R,Q]: forced(S,Z,Q)-> clauseforced(S+1,K,X).
+%clause K forces literal X when all other literals have been forced false
+
+ rclause[K,P,X], step[S], S>0::  forced(S,X,P) <- clauseforced(S,K,X).
+ var[X], polarity[P], step[S], S > 0:: forced(S,X,P) ->rclause[K,P,X]: clauseforced(S,K,X) |input[I], P == pos: forced(0,I,pos) |input[I], P == neg: forced(0,I,neg).
+

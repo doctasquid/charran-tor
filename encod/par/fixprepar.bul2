@@ -1,0 +1,229 @@
+%
+% so I can figure stuff out this is a parallel binary counter and comparer
+% that uses a fixed sized maximum in order to even out the representation
+% of the numbers as I count them
+%
+#ground num[20].
+#ground count[5].
+
+% creating input variables
+ num[N] :: #ground input[1..N].
+ input[I] :: #ground var[I].
+%precision of the counter (uint32 at first)
+ num[N] :: #ground pre[2//N + 1]. 
+%pre[5].
+
+pre[Pre]:: #ground enumpre[1..Pre].
+
+% encoding the count into binary
+count[K]:: #ground max[1,K #mod 2, K/2].
+enumpre[I], I > 1, max[I-1,J,Kp]:: #ground max[I,Kp #mod 2, Kp/2].
+
+% debug statement to check whether binary encoding is correct
+% enumpre[I], max[I,D,R] ::#exists[0]  count(I,D,R).
+
+%
+% Constructing the binary tree (range tree?)
+%
+
+% root node, its sum is sum of range 1..N
+num[N]:: #ground node[1,1,N].
+% for every node which spans a range greater than 1 create
+% child nodes in order to split the range between them
+% grounding facts seem to be mutually recursive which seems pog
+node[X,S,E], S < E:: #ground node[X*2,S,(S+E)/2].
+node[X,S,E], S < E:: #ground node[X*2 + 1,(S+E)/2 + 1, E].
+
+% debugging statement to check which nodes produced (remove later)
+%node[X,S,E]:: #exists[0] node(X,S,E).
+
+% constructing the data structure which holds the count for each node
+% which is a pre bit sized unsigned integer
+node[X,S,E], enumpre[C]:: #ground var[counter(X,C)].
+
+% as far as I can tell there is not a straightforward manner to encode sets into BULE
+% in its stead we shall use a variable to check whether by the Dth digit the number 
+% represented by the first D digits produced by the counter is less than or equal to
+% the number produced by the first D digits of the maximum
+%
+% update: I thought of one using hot encoding
+%
+% the implication is one way, merely forcing it into an unfavourable state
+% looking at the implication tables I wrote out I am pretty sure that 
+% there is no point at which evaluating to false where a true is necessary
+% is favourable but ill ... either fix the equivalences or think this 
+% through more fully at some point
+
+ enumpre[D] :: #ground var[comparator(D)].
+
+% we consider the first number. 
+% there is only one arrangement (1 0) which will violate <= so
+% we force the implication for that case
+max[1,0,R]:: #ground clause[ncompareinit(1),neg,comparator(1)].
+max[1,0,R]:: #ground clause[ncompareinit(1),neg,counter(1,1)].
+
+max[1,0,R]:: #ground clause[pcompareinit(1),pos,comparator(1)].
+max[1,0,R]:: #ground clause[pcompareinit(1),pos,counter(1,1)].
+
+max[1,1,R]:: #ground clause[compareinit(1),pos,comparator(1)].
+
+% we consider the remaining cases now
+
+max[D,1,R], enumpre[D], D > 1:: #ground clause[ncompare1(D),pos,comparator(D-1)].
+max[D,1,R], enumpre[D], D > 1:: #ground clause[ncompare1(D),neg,counter(1,D)].
+max[D,1,R], enumpre[D], D > 1:: #ground clause[ncompare1(D),neg,comparator(D)].
+
+max[D,1,R], enumpre[D], D > 1:: #ground clause[pcompare1d(D),neg,counter(1,D)].
+max[D,1,R], enumpre[D], D > 1:: #ground clause[pcompare1d(D),pos,comparator(D)].
+
+max[D,1,R], enumpre[D], D > 1:: #ground clause[pcompare1p(D),pos,comparator(D - 1)].
+max[D,1,R], enumpre[D], D > 1:: #ground clause[pcompare1p(D),pos,comparator(D)].
+
+max[D,0,R], enumpre[D], D > 1:: #ground clause[ncompare0d(D),neg,counter(1,D)].
+max[D,0,R], enumpre[D], D > 1:: #ground clause[ncompare0d(D),neg,comparator(D)].
+
+max[D,0,R], enumpre[D], D > 1:: #ground clause[ncompare0p(D),pos,comparator(D - 1)].
+max[D,0,R], enumpre[D], D > 1:: #ground clause[ncompare0p(D),neg,comparator(D)].
+
+max[D,0,R], enumpre[D], D > 1:: #ground clause[pcompare0(D),neg,comparator(D-1)].
+max[D,0,R], enumpre[D], D > 1:: #ground clause[pcompare0(D),pos,counter(1,D)].
+max[D,0,R], enumpre[D], D > 1:: #ground clause[pcompare0(D),pos,comparator(D)].
+
+% last the check to check if its actually less than :)
+
+pre[P]:: #ground clause[check,pos,comparator(P)]. 
+
+%
+% Constructing the counter for nodes with a range of 1
+% In this case they should either be 1 or 0.
+% In this case the first value should be set to the value of the only variable
+% in the range and the remaining variables should be set to 0
+%
+% note since the counter is trying to find an option <= the correct value 
+% we set it so that input variable implies the first bit of the counter
+% so that it is forced true, since the SAT will be trying to minimise the sum
+node[X,S,S]:: #ground clause[unitcount(S,1),neg,S]. 
+node[X,S,S]:: #ground clause[unitcount(S,1),pos,counter(X,1)]. 
+node[X,S,S], enumpre[C], C > 1:: #ground clause[unitcount(S,C),neg,counter(X,C)].
+
+~var(1).
+~var(2).
+~var(3).
+~var(4).
+var(5).
+~var(6).
+~var(7).
+~var(8).
+~var(9).
+var(10).
+~var(11).
+~var(12).
+~var(12).
+~var(13).
+var(14).
+~var(15).
+~var(16).
+~var(17).
+~var(18).
+~var(19).
+var(20).
+
+%
+% adder encoding - this is where the fun begins :)
+%
+% adder encodings need to be done for every node that describes a range that
+% is greater than one, that is nodes that are greater than a unit range
+%
+% since we confine the counter to values of a fixed precision issues with the
+% changing bases for each node can be set aside for now
+% however note that using a fixed precision will increase the amount of variables
+% introduced very much quite substantially, for 32 uint precision it should be by
+% I think 32n? which is quite a high number, compared to using the minimum needed
+% for each range which should give about 4*n extra variables for calculating the
+% sums
+% I think that this problem would be slightly mitigated if we used encodings that
+% used an equivalent instead of a one way implication but that's a problem for
+% another day :) 
+
+% we need to generate a variable to represent every carry as well (oops)
+node[X,S,E], S < E, enumpre[D]:: #ground var[carry(X,D)].
+
+% in order to prevent overflows (not sure if this is necessary yet but might
+% as well)
+%
+% Yeah, uh, note to self, turns out this is really important. I am not sure for
+% certain why but I have a guess at least. The problem before was that even
+% for values which should be causing an issue what happens is that the SAT 
+% solver maximises the sum in order to avoid the constraint by hiding in the
+% overflow bit.
+% An example of this would be
+% If the count is meant to be 010 and it is meant to be less than or equal to 001
+% what it can do is set it so that the sum is evaluated to 000 with the carry bit
+% for the largest number being 1, effectively being 8, but hiding in the fixed 
+% precision. This is very sneaky, so the overflow bit needs to be set to
+% negative.  
+%
+node[X,S,E], pre[D], S < E:: #ground clause[overflow(X),neg,carry(X,D)].
+
+% for calculating the first digit a half adder should be used, since there
+% is no carry beforehand, oop
+% a V ~b V s_out AND ~a V b V s_out 
+node[X,S,E], S < E:: #ground clause[adder1(X,1),pos,counter(X*2,1)].
+node[X,S,E], S < E:: #ground clause[adder1(X,1),neg,counter(X*2 + 1,1)].
+node[X,S,E], S < E:: #ground clause[adder1(X,1),pos,counter(X,1)].
+
+node[X,S,E], S < E:: #ground clause[adder2(X,1),neg,counter(X*2,1)].
+node[X,S,E], S < E:: #ground clause[adder2(X,1),pos,counter(X*2 + 1,1)].
+node[X,S,E], S < E:: #ground clause[adder2(X,1),pos,counter(X,1)].
+
+% ~a V ~b V c_out
+node[X,S,E], S < E:: #ground clause[adder3(X,1),neg,counter(X*2,1)].
+node[X,S,E], S < E:: #ground clause[adder3(X,1),neg,counter(X*2 + 1,1)].
+node[X,S,E], S < E:: #ground clause[adder3(X,1),pos,carry(X,1)].
+
+% for calculating the rest of the digits a full adder should be used
+% full adder means that it gives you a time full of fun :)
+
+% a V ~b V c V s_out AND ~a V b V c V s_out 
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder1(X,D),pos,counter(X*2,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder1(X,D),neg,counter(X*2 + 1,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder1(X,D),pos,carry(X,D - 1)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder1(X,D),pos,counter(X,D)].
+
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder2(X,D),neg,counter(X*2,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder2(X,D),pos,counter(X*2 + 1,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder2(X,D),pos,carry(X,D - 1)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder2(X,D),pos,counter(X,D)].
+
+% a V b V ~c V s_out AND ~a V ~b V ~c V s_out 
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder3(X,D),pos,counter(X*2,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder3(X,D),pos,counter(X*2 + 1,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder3(X,D),neg,carry(X,D - 1)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder3(X,D),pos,counter(X,D)].
+
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder4(X,D),neg,counter(X*2,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder4(X,D),neg,counter(X*2 + 1,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder4(X,D),neg,carry(X,D - 1)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder4(X,D),pos,counter(X,D)].
+
+% ~a V ~b V c_out
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder5(X,D),neg,counter(X*2,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder5(X,D),neg,counter(X*2 + 1,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder5(X,D),pos,carry(X,D)].
+
+% ~a V ~c V c_out AND ~b V ~c V c_out.
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder6(X,D),neg,counter(X*2,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder6(X,D),neg,carry(X,D - 1)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder6(X,D),pos,carry(X,D)].
+
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder7(X,D),neg,counter(X*2 + 1,D)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder7(X,D),neg,carry(X,D - 1)].
+node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder7(X,D),pos,carry(X,D)].
+
+%checking variables and clauses generated
+ var[V] :: #exists[0] var(V).
+ clause[K,P,X] :: #ground clausel[K].
+ clausel[K]:: clause[K,pos,X]: var(X) | clause[K,neg,X]: ~var(X).
+
+ var[V], ~input[V]:: #hide var(V).
+ var[V], ~input[V]:: #hide ~var(V).

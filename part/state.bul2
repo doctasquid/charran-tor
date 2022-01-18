@@ -1,0 +1,62 @@
+
+%
+% This file describes the logic that will be used to check whether
+% the states are s ok ~s contradiction 
+%
+
+rclause[K,P,X] :: fullclausel[K].
+ clausel[K]:: #exists[3] fullclauseok(K).
+:: clausel[K]:: #hide fullclauseok(K).
+:: clausel[K]:: #hide ~fullclauseok(K).
+::clausel[K], laststep[L]:: fullclauseok(K) -> :rclause[K,P,X]: fullforced(L,X,P).
+::clausel[K], laststep[L], rclause[K,P,X] :: fullforced(L,X,P) -> fullclauseok(K).
+
+fullcontradiction | fullallok.
+fullcontradiction -> ~s.
+fullallok -> s.
+
+fullcontradiction -> ~fullallok.
+#exists[3] fullallok.
+#exists[3] fullcontradiction.
+#hide ~fullallok.
+#hide ~fullcontradiction.
+::var[X], step[S]:: #exists[3] fullcontradictionvar(S,X).
+::var[X], step[S]:: #hide fullcontradictionvar(S,X).
+::var[X], step[S]:: #hide ~fullcontradictionvar(S,X).
+fullcontradiction -> :var[X], laststep[L]: fullcontradictionvar(L,X).
+::var[X], laststep[L]:: fullcontradictionvar(L,X) -> fullcontradiction.
+::clausel[K]:: fullallok -> fullclauseok(K).
+
+%polarity[pos].
+%polarity[neg].
+%dualpolarity[pos,neg].
+%dualpolarity[neg,pos].
+%::clause[K,P,X], dualpolarity[P,Q], clause[K,Q,X]:: trivclause[K].
+::clause[K,P,X], ~trivclause[K]:: rfullclause[K,P,X].
+%:: laststep[L] :: step[0..L].
+
+:: step[S],rclause[K,P,X], S > 0:: #exists[3] fullclauseforced(S,K,X).
+:: step[S],rclause[K,P,X],  S > 0:: #hide fullclauseforced(S,K,X).
+:: step[S], var[X], polarity[P] :: #exists[3] fullforced(S,X,P).
+:: step[S], var[X], polarity[P], laststep[L] :: #hide fullforced(S,X,P).
+:: step[S],rclause[K,P,X], S > 0:: #hide ~fullclauseforced(S,K,X).
+:: step[S], var[X], polarity[P] :: #hide ~fullforced(S,X,P).
+
+:: var[X], step[S]:: ~fullforced(S,X,pos) | ~fullforced(S,X,neg) | fullcontradictionvar(S,X).
+:: var[X], step[S], polarity[P]::  fullcontradictionvar(S,X) -> fullforced(S,X,P).
+:: step[S], step[S+1], var[X], polarity[P]:: fullforced(S,X,P) -> fullforced(S+1,X,P).
+
+:: input[I] :: value(I) -> fullforced(0,I,pos).
+:: input[I] :: value(I) -> ~fullforced(0,I,neg).
+:: input[I] :: ~value(I) -> fullforced(0,I,neg).
+:: input[I] :: ~value(I) -> ~fullforced(0,I,pos).
+:: var[X], ~input[X], polarity[P]:: ~fullforced(0,X,P).
+
+:: rclause[K,P,X], rclause[K,R,Z], Z != X, dualpolarity[R,Q], step[S], step[S+1]:: fullforced(S,Z,Q) <- fullclauseforced(S+1,K,X)  . 
+%clause K can only force literal X if all other literals have been forced to be false at previous step
+:: rclause[K,P,X], step[S], step[S+1]:: :rclause[K,R,Z], Z != X, dualpolarity[R,Q]: fullforced(S,Z,Q)-> fullclauseforced(S+1,K,X).
+%clause K forces literal X when all other literals have been forced false
+
+:: rclause[K,P,X], step[S], S>0::  fullforced(S,X,P) <- fullclauseforced(S,K,X).
+:: var[X], polarity[P], step[S], S > 0:: fullforced(S,X,P) -> :rclause[K,P,X]: fullclauseforced(S,K,X) | :input[X], P == pos: value(X) | :input[X], P == neg: ~value(X).
+

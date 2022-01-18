@@ -1,0 +1,8 @@
+#ground input[i].
+
+#ground var[i].
+#ground var[x].
+#ground clause[0,neg,i].
+#ground clause[1,pos,x].
+#ground clause[1,neg,x].
+

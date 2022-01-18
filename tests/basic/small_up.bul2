@@ -1,0 +1,19 @@
+#ground input[i].
+
+#ground var[i].
+#ground var[x].
+#ground var[o].
+#ground clause[a,pos,i].
+#ground clause[a,neg,x].
+
+#ground clause[b,pos,x].
+#ground clause[b,neg,i].
+
+#ground clause[c,pos,x].
+#ground clause[c,neg,o].
+
+#ground clause[d,pos,o].
+#ground clause[d,neg,x].
+
+#ground clause[e,neg,o].
+

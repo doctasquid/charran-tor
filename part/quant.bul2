@@ -1,0 +1,78 @@
+
+% This file will contain quantifications, as well as multiplexer logic
+
+% This file only relies upon grounding facts describing the input variables
+% these should be of the form:
+% #ground Input[a]. where a is one of the input variables that are required
+ 
+% The output of this file consists of for each input[I] some variable
+% value(I) such that the value for all full assignments for the tested
+% partial assignment is fulfilled
+% The output of the file will also consist of the value s which denotes
+% whether the partial assignment resolves to SAT or UNSAT
+% The unit propogation file will used assigned and part in order to
+% determine which variables are part of the partial assignment and
+% in order to determine what the values of the partial assignment
+% are.
+% In order to access these we follow the following convention:
+% for Input[I] assigned(I) describes whether it is in the partial assignment
+% for Input[I] part(I) describes what its value in the partial assignment is
+% (note that this is only meaningful if assigned(I) is true)
+
+%
+% The condition that we wish to describe is as follows:
+% There exists some set of input variables for which
+% There exists some partial assignment p and state s for which
+%  Partial assignment p SAT is not decideable by UP
+%  For all full assignments consistent with p 
+%   They resolve to s, where s is either SAT or UNSAT
+%
+% We use the appropriate quantifications in order to achieve this
+
+% We want to choose a set of variables to be considered
+% It would be nice to do that within the Bule loops, but since
+% this is not possible, as far as I can tell, the best way is
+% to use an array of switches, and when the switches are turned
+% on we use the value of the partial assignment.
+
+% variable which describes whether this variable is assigned in
+% a partial assignment
+input[I]:: #exists[0] assigned(I).
+
+% Full assignments are considered alright
+% We are only concerned with partial assignments, so this clause
+% prevents the solver from creating any full assignments
+% input[I]: ~assigned(I).
+
+% This variable describes what the values of the variables that are partially assigned
+% are. This creates a lot of wastage as the variables that are not partially assigned
+% are also shown but like, this is the best I have for now. This should also be less
+% of a concern since our concern is whether A violating case exists, not determining
+% all cases which violate the conditions
+
+input[I]:: #exists[1] part(I).
+
+% This variable describes whether we want all of the full assignments to resolve to true
+% or false
+
+#exists[1] s.
+
+input[I]:: #forall[2] full(I).
+
+% The next part of the logic will describe the multiplexing. Basically if we have selected
+% the variable to be assigned we use the value of the partial assignment, and if we have
+% not then we use the value of the full assignment
+
+input[I]:: #exists[3] value(I).
+
+input[I]:: assigned(I) & part(I) -> value(I).
+input[I]:: assigned(I) & ~part(I) -> ~value(I).
+input[I]:: ~assigned(I) & full(I) -> value(I).
+input[I]:: ~assigned(I) & ~full(I) -> ~value(I).
+
+%
+% Addendum which I just realised
+% it may be possible to have a full assignment which can resolve to both false or true
+% depending on the internal variables. this was a factor within the initial problem.
+%
+

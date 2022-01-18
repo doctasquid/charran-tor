@@ -1,0 +1,69 @@
+#ground num[2].
+#ground count[1].
+
+
+num[N]:: #ground input [1..N].
+% the input variables can vary over this set of values
+count[K]:: #ground card  [1..K].
+% all allowed values for the number of inputs which can be set to be true (all allowed cardinals)
+
+input[Ns]:: #ground var[Ns].
+%variables which correspond to the input variables
+input[Ns], num[N], card[Ks]:: #ground var[Ks*N + Ns].
+%these variables describe the internal counters of the sequential counter
+%the numbering scheme is for s(1,2) var = 1+2*N
+%what this means in natural language terms is that var[Ks*N + Ns] is true if and only if
+%there are at least Ks variables from 1 .. Ns which are true
+input[Ns],count[K],num[N]:: #ground var[Ns + (K + 1) * N].
+% buffer variables -> will always be set to true if there are greater than K values set to
+% true in the inputs 1 .. Ns
+
+%encoding n = 1
+num[N]:: #ground clause[1,neg,1].
+num[N]:: #ground clause[1,pos,1*N + 1].
+% if the first variable is true there is one value from 1..1 which is true, else there is not
+% logic to express this
+card[Ks], num[N], Ks > 1:: #ground clause[Ks,neg,Ks*N + 1]. 
+%it is impossible to have more than 1 variable set true from 1..1 so the rest are set to false
+
+%encoding i > 1 and i <= N
+% for Ns = 2 .. N 
+%::input[Ns], num[N], count[K], Ns > 1, Ns <= N:: 
+%standard loop to copy
+
+% ~x(i) V s(i,1)
+input[Ns], num[N], count[K], Ns > 1, Ns <= N:: #ground clause[(2*K+3)*Ns + 1,neg,Ns].
+input[Ns], num[N], count[K], Ns > 1, Ns <= N:: #ground clause[(2*K+3)*Ns + 1,pos,Ns + N].
+
+% ~s(i-1,1) V s(i,1)
+input[Ns], num[N], count[K], Ns > 1, Ns <= N:: #ground clause[(2*K+3)*Ns + 2,neg,Ns - 1 + N].
+input[Ns], num[N], count[K], Ns > 1, Ns <= N:: #ground clause[(2*K+3)*Ns + 2,pos,Ns + N].
+
+%note next two are for j > 1 and j <= K
+
+% ~x(i) V ~s(i-1,j-1) V s(i,j)
+input[Ns], num[N], count[K], Ns > 1, Ns <= N, card[Ks], Ks > 1::  #ground clause[(2*K+3)*Ns + 2 + Ks,neg, Ns].
+input[Ns], num[N], count[K], Ns > 1, Ns <= N, card[Ks], Ks > 1::  #ground clause[(2*K+3)*Ns + 2 + Ks,neg, Ns - 1 + (Ks - 1)*N].
+input[Ns], num[N], count[K], Ns > 1, Ns <= N, card[Ks], Ks > 1::  #ground clause[(2*K+3)*Ns + 2 + Ks,pos, Ns + Ks*N].
+
+% ~s(i-1,j) V s(i,j)
+input[Ns], num[N], count[K], Ns > 1, Ns <= N, card[Ks], Ks > 1::  #ground clause[(2*K+3)*Ns + 2 + K + Ks,neg, Ns - 1 + Ks*N].
+input[Ns], num[N], count[K], Ns > 1, Ns <= N, card[Ks], Ks > 1::  #ground clause[(2*K+3)*Ns + 2 + K + Ks,pos, Ns + Ks*N].
+
+% ~x(i) V ~s(i-1,k) V v(i)
+input[Ns], num[N], count[K], Ns > 1, Ns <= N::  #ground clause[(2*K+3)*Ns + 3 + 2*K,neg, Ns].
+input[Ns], num[N], count[K], Ns > 1, Ns <= N::  #ground clause[(2*K+3)*Ns + 3 + 2*K,neg, Ns - 1 + K*N].
+input[Ns], num[N], count[K], Ns > 1, Ns <= N::  #ground clause[(2*K+3)*Ns + 3 + 2*K,pos, Ns  + (K+1)*N].
+
+%now we must set all the buffers to false
+input[Ns], num[N], count[K]::  #ground clause[(2*K+3)*(N+ 1)  + Ns,neg, Ns  + (K+1)*N].
+
+
+%var[V]:: #exists[0] var(V).
+%var[V], num[N], V > N:: #hide var(V).
+%var[V], num[N], V > N:: #hide ~var(V).
+%clause[K,P,X]:: #ground clauses[K].
+%clauses[K]:: #exists[0] isclause(K).
+%clauses[K]:: isclause(K) | clause[K,pos,X]: var(X) | clause[K,neg,Y]: ~var(Y).
+%clauses[K]:: clause[K,pos,X]: var(X) | clause[K,neg,Y]: ~var(Y).
+

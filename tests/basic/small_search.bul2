@@ -1,0 +1,55 @@
+#ground input[i].
+
+#ground var [i].
+#ground var [x].
+#ground var [y].
+#ground var [o].
+
+#ground clause[0,pos,i].
+#ground clause[0,pos,x].
+#ground clause[0,pos,y].
+#ground clause[0,neg,o].
+
+
+#ground clause[2,pos,i].
+#ground clause[2,neg,x].
+#ground clause[2,pos,y].
+#ground clause[2,neg,o].
+
+
+#ground clause[4,pos,i].
+#ground clause[4,pos,x].
+#ground clause[4,neg,y].
+#ground clause[4,neg,o].
+
+
+#ground clause[6,pos,i].
+#ground clause[6,neg,x].
+#ground clause[6,neg,y].
+#ground clause[6,neg,o].
+
+#ground clause[1,neg,i].
+#ground clause[1,pos,x].
+#ground clause[1,pos,y].
+#ground clause[1,pos,o].
+
+
+#ground clause[3,neg,i].
+#ground clause[3,neg,x].
+#ground clause[3,pos,y].
+#ground clause[3,pos,o].
+
+
+#ground clause[5,neg,i].
+#ground clause[5,pos,x].
+#ground clause[5,neg,y].
+#ground clause[5,pos,o].
+
+
+#ground clause[7,neg,i].
+#ground clause[7,neg,x].
+#ground clause[7,neg,y].
+#ground clause[7,pos,o].
+
+#ground clause[8,neg,o].
+
