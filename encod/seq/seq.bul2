@@ -1,5 +1,5 @@
-#ground num[2].
-#ground count[1].
+#ground num[9].
+#ground count[3].
 
 
 num[N]:: #ground input [1..N].

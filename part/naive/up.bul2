@@ -1,5 +1,5 @@
-laststep[20].
-rclause[K,P,X] :: clausel[K].
+#ground laststep[15].
+rclause[K,P,X] :: #ground clausel[K].
  clausel[K]:: #exists[1] clauseok(K).
  clausel[K]:: #hide clauseok(K).
  clausel[K]:: #hide ~clauseok(K).
@@ -23,14 +23,15 @@ var[X], step[S]:: #hide ~contradictionvar(S,X).
 contradiction -> var[X], laststep[L]: contradictionvar(L,X).
 var[X], laststep[L]:: contradictionvar(L,X) -> contradiction.
 clausel[K]:: allok -> clauseok(K).
+clausel[K]: clauseok(K) -> allok.
 
-polarity[pos].
-polarity[neg].
-dualpolarity[pos,neg].
-dualpolarity[neg,pos].
-clause[K,P,X], dualpolarity[P,Q], clause[K,Q,X]:: trivclause[K].
-clause[K,P,X], ~trivclause[K]:: rclause[K,P,X].
- laststep[L] :: step[0..L].
+#ground polarity[pos].
+#ground polarity[neg].
+#ground dualpolarity[pos,neg].
+#ground dualpolarity[neg,pos].
+clause[K,P,X], dualpolarity[P,Q], clause[K,Q,X]:: #ground trivclause[K].
+clause[K,P,X], ~trivclause[K]:: #ground rclause[K,P,X].
+laststep[L] :: #ground step[0..L].
 
  step[S],rclause[K,P,X], S > 0:: #exists[1] clauseforced(S,K,X).
  step[S],rclause[K,P,X],  S > 0:: #hide clauseforced(S,K,X).

@@ -1,0 +1,41 @@
+
+%
+% This file describes the logic that will be used to check whether
+% the states are s ok ~s contradiction 
+%
+
+clause[K,P,X] :: #ground clauselist[K].
+clauselist[K] :: #exists[3] sclauseok(K). 
+clauselist[K] :: #hide  sclauseok(K). 
+clauselist[K] :: #hide ~sclauseok(K). 
+var[X], ~input[X] :: #exists[3] svar(X).
+var[X], ~input[X] :: #hide  svar(X).
+var[X], ~input[X] :: #hide ~svar(X).
+
+clauselist[K] :: s -> sclauseok(K).
+
+clause[K,pos,X], ~input[X]:: svar(X) -> sclauseok(K). 
+clause[K,neg,X], ~input[X]:: ~svar(X) -> sclauseok(K). 
+
+clause[K,pos,X], input[X]:: value(X) -> sclauseok(K). 
+clause[K,neg,X], input[X]:: ~value(X) -> sclauseok(K). 
+
+clauselist[K]:: sclauseok(K) -> clause[K,pos,X], ~input[X]: svar(X) |  clause[K,neg,X], ~input[X]: ~svar(X) | clause[K,pos,X], input[X]: value(X) | clause[K,neg,X], input[X]: ~value(X).
+
+clauselist[K] :: #exists[3] sclausenotok(K). 
+clauselist[K] :: #hide  sclausenotok(K). 
+clauselist[K] :: #hide ~sclausenotok(K). 
+var[X], ~input[X] :: #forall[2] nsvar(X).
+var[X], ~input[X] :: #hide  nsvar(X).
+var[X], ~input[X] :: #hide ~nsvar(X).
+
+~s -> clauselist[K]: sclausenotok(K).
+
+clause[K,pos,X], ~input[X]:: sclausenotok(K) -> ~nsvar(X).
+clause[K,neg,X], ~input[X]:: sclausenotok(K) ->  nsvar(X).
+
+clause[K,pos,X], input[X]::  sclausenotok(K) -> ~value(X).
+clause[K,neg,X], input[X]::  sclausenotok(K) ->  value(X).
+
+clauselist[K]:: clause[K,pos,X], ~input[X]: ~nsvar(X) & clause[K,neg,X], ~input[X]: nsvar(X) & clause[K,pos,X], input[X]: ~value(X) & clause[K,neg,X], input[X]: value(X) -> sclausenotok(K).
+

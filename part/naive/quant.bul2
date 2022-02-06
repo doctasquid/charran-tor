@@ -51,13 +51,19 @@ input[I]:: #exists[0] assigned(I).
 % all cases which violate the conditions
 
 input[I]:: #exists[1] part(I).
+input[I]:: #hide  part(I).
+input[I]:: #hide ~part(I).
 
 % This variable describes whether we want all of the full assignments to resolve to true
 % or false
 
 #exists[1] s.
 
+~s.
+
 input[I]:: #forall[2] full(I).
+input[I]:: #hide  full(I).
+input[I]:: #hide ~full(I).
 
 % The next part of the logic will describe the multiplexing. Basically if we have selected
 % the variable to be assigned we use the value of the partial assignment, and if we have

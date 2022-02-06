@@ -1,0 +1,5 @@
+var[V]:: #exists[0] var(V).
+var[V], num[N]:: #hide var(V).
+var[V], num[N]:: #hide ~var(V).
+clause[K,P,X]:: #ground clauses[K].
+clauses[K]:: clause[K,pos,X]: var(X) | clause[K,neg,Y]: ~var(Y).

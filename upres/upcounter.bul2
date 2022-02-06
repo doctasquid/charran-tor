@@ -1,4 +1,4 @@
-#ground laststep[3].
+#ground laststep[8].
 rclause[K,P,X] :: #ground clausel[K].
 clausel[K]:: #exists[0] clauseok(K).
 clausel[K]:: #hide clauseok(K).

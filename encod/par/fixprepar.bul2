@@ -3,7 +3,7 @@
 % that uses a fixed sized maximum in order to even out the representation
 % of the numbers as I count them
 %
-#ground num[20].
+#ground num[8].
 #ground count[5].
 
 % creating input variables
@@ -106,27 +106,27 @@ node[X,S,S]:: #ground clause[unitcount(S,1),neg,S].
 node[X,S,S]:: #ground clause[unitcount(S,1),pos,counter(X,1)]. 
 node[X,S,S], enumpre[C], C > 1:: #ground clause[unitcount(S,C),neg,counter(X,C)].
 
-~var(1).
-~var(2).
-~var(3).
-~var(4).
-var(5).
-~var(6).
-~var(7).
-~var(8).
-~var(9).
-var(10).
-~var(11).
-~var(12).
-~var(12).
-~var(13).
-var(14).
-~var(15).
-~var(16).
-~var(17).
-~var(18).
-~var(19).
-var(20).
+%~var(1).
+%~var(2).
+%~var(3).
+%~var(4).
+%var(5).
+%~var(6).
+%~var(7).
+%~var(8).
+%~var(9).
+%var(10).
+%~var(11).
+%~var(12).
+%~var(12).
+%~var(13).
+%var(14).
+%~var(15).
+%~var(16).
+%~var(17).
+%~var(18).
+%~var(19).
+%var(20).
 
 %
 % adder encoding - this is where the fun begins :)
@@ -221,9 +221,9 @@ node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder7(X,D),neg,carry(X,D
 node[X,S,E], S < E, enumpre[D], D > 1:: #ground clause[adder7(X,D),pos,carry(X,D)].
 
 %checking variables and clauses generated
- var[V] :: #exists[0] var(V).
- clause[K,P,X] :: #ground clausel[K].
- clausel[K]:: clause[K,pos,X]: var(X) | clause[K,neg,X]: ~var(X).
+% var[V] :: #exists[0] var(V).
+% clause[K,P,X] :: #ground clausel[K].
+% clausel[K]:: clause[K,pos,X]: var(X) | clause[K,neg,X]: ~var(X).
 
- var[V], ~input[V]:: #hide var(V).
- var[V], ~input[V]:: #hide ~var(V).
+% var[V], ~input[V]:: #hide var(V).
+% var[V], ~input[V]:: #hide ~var(V).

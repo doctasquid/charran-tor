@@ -1,0 +1,8 @@
+input[I] :: varpos(I) -> x(I).
+input[I] :: ~varpos(I) -> ~x(I).
+
+input[I] :: x(I) -> varpos(I).
+input[I] :: ~x(I) -> ~varpos(I).
+
+input[I] :: #hide  varpos(I).
+input[I] :: #hide ~varpos(I).

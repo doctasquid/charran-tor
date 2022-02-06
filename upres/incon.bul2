@@ -1,0 +1,22 @@
+%
+% Determines whether a full assignment will be inconsistent.
+%
+
+clauselist[K] :: #hide clausenotok(K). 
+clauselist[K] :: #hide ~clausenotok(K). 
+
+var[X], ~input[X] :: #hide varpos(X).
+var[X], ~input[X] :: #hide ~varpos(X).
+
+input[I] :: #exists[0] varpos(I).
+var[X], ~input[X] :: #forall[1] varpos(X).
+
+clause[K,P,X] :: #ground clauselist[K].
+clauselist[K] :: #exists[2] clausenotok(K).
+ 
+clauselist[K] : clausenotok(K).
+clause[K,pos,X] :: clausenotok(K) ->  ~varpos(X). 
+clause[K,neg,X] :: clausenotok(K) ->   varpos(X). 
+
+clauselist[K]:: clause[K,pos,X]: ~varpos(X) & clause[K,neg,Y]: varpos(Y) -> clausenotok(K).
+
